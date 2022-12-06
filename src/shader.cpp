@@ -101,6 +101,7 @@ void Shader::addShader( GLuint theProgram, const char* shaderCode, GLenum shader
     }
 
     glAttachShader( theProgram, theShader );
+    glDeleteShader( theShader );
 }
 
 void Shader::useShader() { glUseProgram( shaderID ); }

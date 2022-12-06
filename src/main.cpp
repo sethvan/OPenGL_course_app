@@ -1,3 +1,4 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -13,26 +14,48 @@
 #include "mesh.h"
 #include "oglwindow.h"
 #include "shader.h"
+#include "texture.h"
 
+// A mesh is a collection of vertices, faces and edges that define the shape of a 3d object
 std::vector<Mesh> meshList;
 std::vector<Shader> shaderList;
 
-static float toRadians( const float degrees ) { return degrees / 57.29578f; }
+static float toRadians( const float degrees ) {
+    return degrees / 57.29578f;
+}
 
+// Delta time measures elapsed time to know how much to adjust the graphics so as to balance the graphics'
+// output in spite of inconsistent system speed, see https://en.wikipedia.org/wiki/Delta_timing .
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
+// Creates Mesh objects, indices are indices of vertices and their order to be drawn.
 void CreateObjects() {
 
-    unsigned int indices[] = { 0, 3, 1, 1, 3, 2, 2, 3, 0, 0, 1, 2 };
-    GLfloat vertices[] = { -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f };
+    // clang-format off
+    std::vector<GLuint> indices = { 
+        0, 3, 1,
+        1, 3, 2,
+        2, 3, 0,
+        0, 1, 2
+    };
+    
+    std::vector<GLfloat> vertices = {  
+        // X     Y     Z       U     V 
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f,    
+         0.0f, -1.0f, 1.0f,   0.5f, 0.0f,
+         1.0f, -1.0f, 0.0f,   1.0f, 0.0f,
+         0.0f,  1.0f, 0.0f,   0.5f, 1.0f 
+    };
+    // clang-format on
 
     meshList.emplace_back( Mesh() );
     meshList.emplace_back( Mesh() );
-    meshList[0].createMesh( vertices, indices, 12, 12 );
-    meshList[1].createMesh( vertices, indices, 12, 12 );
+    meshList[0].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
+    meshList[1].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
 }
 
+// Each Shader object here actually contains both a vertex and fragment shader
 void createShaders() {
     shaderList.emplace_back();
     shaderList[0].getShadersFromFiles( "res/shaders/vertex1.shader", "res/shaders/fragment1.shader" );
@@ -46,7 +69,12 @@ int main() {
     CreateObjects();
     createShaders();
 
-    Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -90.0f, 0.0f, 2.5f, 0.5f );
+    Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -90.0f, 0.0f, 2.5f, 0.2f );
+
+    Texture brickTexture( "res/textures/brick.png" );
+    brickTexture.loadTexture();
+    Texture dirtTexture( "res/textures/dirt.png" );
+    dirtTexture.loadTexture();
 
     GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
 
@@ -83,12 +111,14 @@ int main() {
         glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
         glUniformMatrix4fv( uniformProjection, 1, GL_FALSE, glm::value_ptr( projection ) );
         glUniformMatrix4fv( uniformView, 1, GL_FALSE, glm::value_ptr( camera.calculateViewMatrix() ) );
+        brickTexture.useTexture();
         meshList[0].renderMesh();
 
         model = glm::mat4( 1.0f );
         model = glm::translate( model, glm::vec3( 0.0f, 1.0f, -2.5f ) );
         model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
         glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+        dirtTexture.useTexture();
         meshList[1].renderMesh();
 
         glUseProgram( 0 );

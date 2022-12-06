@@ -3,17 +3,19 @@
 Camera::Camera( glm::vec3 startPosition, glm::vec3 startWorldUp, GLfloat startYaw, GLfloat startPitch,
                 GLfloat startMovementSpeed, GLfloat startTurnSpeed )
     : position{ startPosition },
+      front{ glm::vec3( 0.0f, 0.0f, -1.0f ) },
       worldUp{ startWorldUp },
       yaw{ startYaw },
       pitch{ startPitch },
       movementSpeed{ startMovementSpeed },
       turnSpeed{ startTurnSpeed } {
 
+    direction = glm::normalize( position - front );
     update();
 }
 
 void Camera::update() {
-    glm::vec3 direction;
+
     direction.x = cos( glm::radians( yaw ) ) * cos( glm::radians( pitch ) );
     direction.y = sin( glm::radians( pitch ) );
     direction.z = sin( glm::radians( yaw ) ) * cos( glm::radians( pitch ) );

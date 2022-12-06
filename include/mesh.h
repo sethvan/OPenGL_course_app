@@ -1,3 +1,4 @@
+// a mesh is a collection of vertices, faces and edges that define the shape of a 3d object
 #ifndef _INCLUDED_MESH_H
 #define _INCLUDED_MESH_H
 
