@@ -18,11 +18,14 @@ void Mesh::createMesh( GLfloat *vertices, unsigned int *indices, unsigned int nu
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, IBO );
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices[0] ) * numOfIndices, indices, GL_STATIC_DRAW );
 
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof( GLfloat ), 0 );
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof( GLfloat ), 0 );
     glEnableVertexAttribArray( 0 );
 
-    glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof( GLfloat ), (GLvoid *)( 3 * sizeof( GLfloat ) ) );
+    glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof( GLfloat ), (GLvoid *)( 3 * sizeof( GLfloat ) ) );
     glEnableVertexAttribArray( 1 );
+
+    glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof( GLfloat ), (GLvoid *)( 5 * sizeof( GLfloat ) ) );
+    glEnableVertexAttribArray( 2 );
 
     glBindVertexArray( 0 );  // this unbinds
 }

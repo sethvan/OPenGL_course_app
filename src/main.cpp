@@ -25,6 +25,48 @@ static float toRadians( const float degrees ) {
     return degrees / 57.29578f;
 }
 
+// I believe this takes the normal of each face that a vertex is a part of and it looks like mathematically
+// the average between all the faces that a vertex is a component of is calculated by adding them altogether.
+// That average is what is set for each vertex. The second for loop then normalizes that calculated average.
+void calcAverageNormals( std::vector<GLuint>& indices, std::vector<GLfloat>& vertices, unsigned int vLength,
+                         unsigned int normalOffset ) {
+    for ( size_t i = 0; i < indices.size(); i += 3 ) {
+        unsigned int in0 = indices[i] * vLength;
+        unsigned int in1 = indices[i + 1] * vLength;
+        unsigned int in2 = indices[i + 2] * vLength;
+        glm::vec3 v1( vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1],
+                      vertices[in1 + 2] - vertices[in0 + 2] );
+        glm::vec3 v2( vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1],
+                      vertices[in2 + 2] - vertices[in0 + 2] );
+
+        // Calculates normal by cross product to get perpendicular angle to two lines of triangle
+        glm::vec3 normal = glm::cross( v1, v2 );
+        normal = glm::normalize( normal );
+
+        in0 += normalOffset;
+        in1 += normalOffset;
+        in2 += normalOffset;
+        vertices[in0] += normal.x;
+        vertices[in0 + 1] += normal.y;
+        vertices[in0 + 2] += normal.z;
+        vertices[in1] += normal.x;
+        vertices[in1 + 1] += normal.y;
+        vertices[in1 + 2] += normal.z;
+        vertices[in2] += normal.x;
+        vertices[in2 + 1] += normal.y;
+        vertices[in2 + 2] += normal.z;
+    }
+
+    for ( size_t i = 0; i < vertices.size() / vLength; i++ ) {
+        unsigned int nOffset = i * vLength + normalOffset;
+        glm::vec3 vec( vertices[nOffset], vertices[nOffset + 1], vertices[nOffset + 2] );
+        vec = glm::normalize( vec );
+        vertices[nOffset] = vec.x;
+        vertices[nOffset + 1] = vec.y;
+        vertices[nOffset + 2] = vec.z;
+    }
+}
+
 // Delta time measures elapsed time to know how much to adjust the graphics so as to balance the graphics'
 // output in spite of inconsistent system speed, see https://en.wikipedia.org/wiki/Delta_timing .
 GLfloat deltaTime = 0.0f;
@@ -42,13 +84,15 @@ void CreateObjects() {
     };
     
     std::vector<GLfloat> vertices = {  
-        // X     Y     Z       U     V 
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f,    
-         0.0f, -1.0f, 1.0f,   0.5f, 0.0f,
-         1.0f, -1.0f, 0.0f,   1.0f, 0.0f,
-         0.0f,  1.0f, 0.0f,   0.5f, 1.0f 
+        // X     Y     Z       U     V        nX    nY    nZ
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+         0.0f, -1.0f, 1.0f,   0.5f, 0.0f,    0.0f, 0.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,   1.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+         0.0f,  1.0f, 0.0f,   0.5f, 1.0f,    0.0f, 0.0f, 0.0f
     };
     // clang-format on
+
+    calcAverageNormals( indices, vertices, 8, 5 );
 
     meshList.emplace_back( Mesh() );
     meshList.emplace_back( Mesh() );
@@ -72,13 +116,15 @@ int main() {
 
     // per experimenting I suspect uniforms must always be initialized to 0 before getting their location
     GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformAmbientIntensity = 0,
-           uniformAmbientColour = 0;
+           uniformAmbientColour = 0, uniformDirection = 0, uniformDiffuseIntensity = 0;
 
     uniformModel = shaderList[0].getModelLocation();
     uniformProjection = shaderList[0].getProjectionLocation();
     uniformView = shaderList[0].getViewLocation();
     uniformAmbientColour = shaderList[0].getAmbientColourLocation();
     uniformAmbientIntensity = shaderList[0].getAmbientIntensityLocation();
+    uniformDirection = shaderList[0].getDirectionLocation();
+    uniformDiffuseIntensity = shaderList[0].getDiffuseIntensityLocation();
 
     Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -90.0f, 0.0f, 2.5f, 0.2f );
 
@@ -87,7 +133,7 @@ int main() {
     Texture dirtTexture( "res/textures/dirt.png" );
     dirtTexture.loadTexture();
 
-    Light mainLight( 1.0f, 1.0f, 1.0f, 0.4f );
+    Light mainLight( 1.0f, 1.0f, 1.0f, 0.4f, 2.0f, -1.0f, -2.0f );
 
     // says he only needs to make this once and not recalculate it
     // therefore not in while loop
@@ -112,7 +158,7 @@ int main() {
 
         shaderList[0].useShader();
 
-        mainLight.useLight( uniformAmbientIntensity, uniformAmbientColour );
+        mainLight.useLight( uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection );
 
         glm::mat4 model( 1.0f );
 
