@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "camera.h"
+#include "light.h"
 #include "mesh.h"
 #include "oglwindow.h"
 #include "shader.h"
@@ -69,6 +70,16 @@ int main() {
     CreateObjects();
     createShaders();
 
+    // per experimenting I suspect uniforms must always be initialized to 0 before getting their location
+    GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformAmbientIntensity = 0,
+           uniformAmbientColour = 0;
+
+    uniformModel = shaderList[0].getModelLocation();
+    uniformProjection = shaderList[0].getProjectionLocation();
+    uniformView = shaderList[0].getViewLocation();
+    uniformAmbientColour = shaderList[0].getAmbientColourLocation();
+    uniformAmbientIntensity = shaderList[0].getAmbientIntensityLocation();
+
     Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -90.0f, 0.0f, 2.5f, 0.2f );
 
     Texture brickTexture( "res/textures/brick.png" );
@@ -76,7 +87,7 @@ int main() {
     Texture dirtTexture( "res/textures/dirt.png" );
     dirtTexture.loadTexture();
 
-    GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0;
+    Light mainLight( 1.0f, 1.0f, 1.0f, 0.4f );
 
     // says he only needs to make this once and not recalculate it
     // therefore not in while loop
@@ -100,9 +111,8 @@ int main() {
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         shaderList[0].useShader();
-        uniformModel = shaderList[0].getModelLocation();
-        uniformProjection = shaderList[0].getProjectionLocation();
-        uniformView = shaderList[0].getViewLocation();
+
+        mainLight.useLight( uniformAmbientIntensity, uniformAmbientColour );
 
         glm::mat4 model( 1.0f );
 

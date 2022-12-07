@@ -37,7 +37,8 @@ namespace {
     }
 }  // namespace
 
-Shader::Shader() : shaderID{ 0 }, uniformProjection{ 0 }, uniformModel{ 0 } {}
+Shader::Shader() : shaderID{ 0 }, uniformProjection{ 0 }, uniformModel{ 0 } {
+}
 
 void Shader::createFromString( const char* vertexCode, const char* fragmentCode ) {
     compileShader( vertexCode, fragmentCode );
@@ -76,6 +77,8 @@ void Shader::compileShader( const char* vertexCode, const char* fragmentCode ) {
     uniformModel = glGetUniformLocation( shaderID, "model" );
     uniformProjection = glGetUniformLocation( shaderID, "projection" );
     uniformView = glGetUniformLocation( shaderID, "view" );
+    uniformAmbientColour = glGetUniformLocation( shaderID, "directionalLight.colour" );
+    uniformAmbientIntensity = glGetUniformLocation( shaderID, "directionalLight.ambientIntensity" );
 }
 
 void Shader::addShader( GLuint theProgram, const char* shaderCode, GLenum shaderType ) {
@@ -104,7 +107,9 @@ void Shader::addShader( GLuint theProgram, const char* shaderCode, GLenum shader
     glDeleteShader( theShader );
 }
 
-void Shader::useShader() { glUseProgram( shaderID ); }
+void Shader::useShader() {
+    glUseProgram( shaderID );
+}
 
 void Shader::clearShader() {
     if ( shaderID != 0 ) {
@@ -116,11 +121,25 @@ void Shader::clearShader() {
     uniformView = 0;
 }
 
-GLuint Shader::getProjectionLocation() { return uniformProjection; }
+GLuint Shader::getProjectionLocation() const {
+    return uniformProjection;
+}
 
-GLuint Shader::getModelLocation() { return uniformModel; }
+GLuint Shader::getModelLocation() const {
+    return uniformModel;
+}
 
-GLuint Shader::getViewLocation() { return uniformView; }
+GLuint Shader::getViewLocation() const {
+    return uniformView;
+}
+
+GLuint Shader::getAmbientIntensityLocation() const {
+    return uniformAmbientIntensity;
+}
+
+GLuint Shader::getAmbientColourLocation() const {
+    return uniformAmbientColour;
+}
 
 void Shader::getShadersFromFiles( const char* vertexPath, const char* fragmentPath ) {
     std::string vertexString = getShaderFromFile( vertexPath );
@@ -128,4 +147,6 @@ void Shader::getShadersFromFiles( const char* vertexPath, const char* fragmentPa
     createFromString( vertexString.c_str(), fragmentString.c_str() );
 }
 
-Shader::~Shader() { clearShader(); }
+Shader::~Shader() {
+    clearShader();
+}

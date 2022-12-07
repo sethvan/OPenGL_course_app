@@ -8,6 +8,9 @@ src/oglwindow.cpp
 src/shader.cpp
 src/mesh.cpp
 src/texture.cpp 
+src/light.cpp 
+src/light.cpp 
+src/light.cpp 
 src/main.cpp )
 
 target_include_directories( oglapp PRIVATE include )

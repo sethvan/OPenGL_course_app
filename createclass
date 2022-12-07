@@ -11,7 +11,7 @@
 # But if you want to for example add a Vertex class to a `Shaders` sub-directory of your `include` then a subdirectory 
 # with the name `Shaders` should already exist in both `include` and `src` before you call this script and the call
 # for that would be `./createclass include/shaders Vertex`
-# replacePhrase is a CPP executable on my maching
+# replacePhrase is a CPP executable on my machine
 
 upperedSecond=$(echo $2 | tr [:lower:] [:upper:])
 loweredSecond=$(echo $2 | tr [:upper:] [:lower:])
@@ -39,3 +39,4 @@ replacePhrase CMakeLists.txt src/main.cpp "${CPPFILE}
 src/main.cpp" CMakeLists.txt
 
 printf "#include \"$INCPATH\"" > $CPPFILE
+printf "\n\n\n\n$2::$2(){}\n\n$2::~$2(){}" >> $CPPFILE

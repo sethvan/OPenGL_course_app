@@ -3,12 +3,21 @@
 in vec4 vCol;    
 in vec2 texCoord;                                                              
                                                                               
-out vec4 colour;      
+out vec4 colour;    
+
+struct DirectionalLight {
+    vec3 colour;
+    float ambientIntensity;
+};
 
 uniform sampler2D theTexture;
+
+// usually directional lights represent something like the sun
+uniform DirectionalLight directionalLight;
                                                                               
 void main()                                                                   
-{                                                                             
-    colour = texture(theTexture, texCoord);                                         
+{
+    vec4 ambientColour = vec4(directionalLight.colour, 1.0f) * directionalLight.ambientIntensity;                                                                      
+    colour = texture(theTexture, texCoord) * ambientColour;                                         
 }
 

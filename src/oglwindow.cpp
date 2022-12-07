@@ -42,7 +42,7 @@ int OGLWindow::initialize() {
     createCallbacks();
 
     // Disable cursor
-    // glfwSetInputMode( mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+    glfwSetInputMode( mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 
     // Allow modern extension features
     glewExperimental = GL_TRUE;
