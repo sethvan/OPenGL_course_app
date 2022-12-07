@@ -44,7 +44,9 @@ void Camera::keyControl( bool* keys, GLfloat deltaTime ) {
     // update();
 }
 
-glm::mat4 Camera::calculateViewMatrix() { return glm::lookAt( position, position + front, up ); }
+glm::mat4 Camera::calculateViewMatrix() {
+    return glm::lookAt( position, position + front, up );
+}
 
 void Camera::mouseControl( GLfloat xChange, GLfloat yChange ) {
     xChange *= turnSpeed;
@@ -62,4 +64,9 @@ void Camera::mouseControl( GLfloat xChange, GLfloat yChange ) {
     update();
 }
 
-Camera::~Camera() {}
+glm::vec3 Camera::getCameraPosition() const {
+    return position;
+}
+
+Camera::~Camera() {
+}

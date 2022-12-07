@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-Texture::Texture( char* fileLoc ) : textureID{ 0 }, width{ 0 }, height{ 0 }, bitDepth{ 0 }, fileLocation{ fileLoc } {
+Texture::Texture( const char* fileLoc )
+    : textureID{ 0 }, width{ 0 }, height{ 0 }, bitDepth{ 0 }, fileLocation{ fileLoc } {
 }
 
 void Texture::loadTexture() {

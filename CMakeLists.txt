@@ -11,6 +11,7 @@ src/texture.cpp
 src/light.cpp 
 src/light.cpp 
 src/light.cpp 
+src/material.cpp 
 src/main.cpp )
 
 target_include_directories( oglapp PRIVATE include )

@@ -33,6 +33,7 @@ class Camera {
     void keyControl( bool* keys, GLfloat deltaTime );
     void mouseControl( GLfloat xChange, GLfloat yChange );
     glm::mat4 calculateViewMatrix();
+    glm::vec3 getCameraPosition() const;
 };
 
 #endif  // _INCLUDED_CAMERA_H

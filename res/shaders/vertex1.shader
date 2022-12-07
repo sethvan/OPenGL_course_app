@@ -6,7 +6,8 @@ layout (location = 2) in vec3 norm;
                                                                               
 out vec4 vCol;     
 out vec2 texCoord;
-out vec3 Normal;                                                           
+out vec3 Normal;      
+out vec3 fragPos;                                                     
                                                                               
 uniform mat4 model;                                                           
 uniform mat4 projection;    
@@ -22,5 +23,7 @@ void main()
     // Using 3*3 matrix because we do not want to take into account any transorms 
     // because the norm is just a direction and not a position. 
     // The transpose is necessary if you have non-uniform scaling
-    Normal = mat3(transpose(inverse(model))) * norm;                                                                     
+    Normal = mat3(transpose(inverse(model))) * norm;     
+
+    fragPos = (model * vec4( pos, 1.0 )).xyz;
 }
