@@ -18,7 +18,7 @@ class Shader {
     GLuint shaderID;
     GLint uniformProjection, uniformModel, uniformView, uniformEyePosition,
         uniformSpecularIntensity, uniformShininess, uniformPointLightCount;
-    LightingUniVarBindings uniformPointLight[MAX_POINT_LIGHTS];
+    std::vector<LightingUniVarBindings> uniformPointLight;
     LightingUniVarBindings uniformDirectionalLight;
 
     void addShader( GLuint theProgram, const char* shaderCode, GLenum shaderType );

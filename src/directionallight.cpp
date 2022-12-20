@@ -1,7 +1,5 @@
 #include "directionallight.h"
 
-#include <iostream>
-
 DirectionalLight::DirectionalLight( GLfloat red, GLfloat green, GLfloat blue,
                                     GLfloat aIntensity, GLfloat dIntensity, GLfloat xDir,
                                     GLfloat yDir, GLfloat zDir )
