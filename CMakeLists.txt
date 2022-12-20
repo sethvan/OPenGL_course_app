@@ -12,6 +12,8 @@ src/light.cpp
 src/light.cpp 
 src/light.cpp 
 src/material.cpp 
+src/directionallight.cpp
+src/pointlight.cpp
 src/main.cpp )
 
 target_include_directories( oglapp PRIVATE include )

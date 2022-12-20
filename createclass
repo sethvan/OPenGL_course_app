@@ -11,14 +11,27 @@
 # But if you want to for example add a Vertex class to a `Shaders` sub-directory of your `include` then a subdirectory 
 # with the name `Shaders` should already exist in both `include` and `src` before you call this script and the call
 # for that would be `./createclass include/shaders Vertex`
-# replacePhrase is a CPP executable on my machine
 
-upperedSecond=$(echo $2 | tr [:lower:] [:upper:])
-loweredSecond=$(echo $2 | tr [:upper:] [:lower:])
+if [ ! $# -eq 2 ]; then
+    echo "Error: Command takes 2 arguments, $# provided."
+    exit 1
+fi
 
-replacePhrase /home/sethvan/myCommands/templates/projectFileTemplates/classTemplate.txt includename $upperedSecond "$1/$loweredSecond.h"
-replacePhrase "$1/$loweredSecond.h" className $2 "$1/$loweredSecond.h"
+# prefer lower case for file names and project name in CMakeLists.txt
+upperedSecondArgument=$(echo "$2" | tr [:lower:] [:upper:])
+loweredSecondArgument=$(echo "$2" | tr [:upper:] [:lower:])
 
+foundFile=$( find include -name "$loweredSecondArgument.h")
+if [ ${#foundFile} -gt 0 ]; then
+    echo "$foundFile already exists! Choose a different class name."
+    exit 1
+fi
+
+#from https://github.com/dylanaraps/pure-sh-bible
+lstrip() {
+    # Usage: lstrip "string" "pattern"
+    printf '%s\n' "${1##$2}"
+}
 
 CPPFILE=""
 INCPATH="$1"
@@ -26,17 +39,33 @@ INCLUDELENGTH=${#INCPATH}
 SIMPLE="include"
 
 if [ "$INCPATH" = "$SIMPLE" ]; then
-    INCPATH="$loweredSecond.h"
-    CPPFILE="src/$loweredSecond.cpp"
+    INCPATH="$loweredSecondArgument.h"
+    CPPFILE="src/$loweredSecondArgument.cpp"
 else
-    CPPFILE="src/${INCPATH:8:INCLUDELENGTH}/$loweredSecond.cpp"
-    INCPATH=${INCPATH:8:INCLUDELENGTH}/$loweredSecond.h    
+    subpath=$(lstrip "$1" 'include/')
+
+    if [ ${#subpath} = $INCLUDELENGTH ]; then
+        echo 'Error: first argument is an invalid include path'
+        exit 1
+    fi
+    if [ ! -d "$1" ] || [ ! -d src/"$subpath" ]; then
+        echo "Error: Sub-directories with name $subpath/ must exist in both include/ and src/ 
+       in order to run command '$0 $1 $2'"  
+        exit 1
+    fi
+
+    CPPFILE="src/$subpath/$loweredSecondArgument.cpp"
+    INCPATH="$subpath/$loweredSecondArgument.h"  # for appending later to ${CPPFILE}.cpp 
 fi
 
-touch $CPPFILE
+classTemplate=/home/$USER/createProject/templates/class.template
 
-replacePhrase CMakeLists.txt src/main.cpp "${CPPFILE} 
-src/main.cpp" CMakeLists.txt
+sed "s:includename:$upperedSecondArgument:g" "$classTemplate" > "$1/$loweredSecondArgument.h"
+printf "%s" "$(sed "s:className:$2:g" "$1/$loweredSecondArgument.h")" > "$1/$loweredSecondArgument.h"
 
-printf "#include \"$INCPATH\"" > $CPPFILE
-printf "\n\n\n\n$2::$2(){}\n\n$2::~$2(){}" >> $CPPFILE
+printf "%s" "$(sed "s:src/main.cpp:$CPPFILE\nsrc/main.cpp:g" CMakeLists.txt)" > CMakeLists.txt
+
+touch "$CPPFILE"
+
+printf "#include \"$INCPATH\"" > "$CPPFILE"
+printf "\n\n\n\n$2::$2(){}\n\n\n$2::~$2(){}" >> "$CPPFILE"

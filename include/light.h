@@ -5,22 +5,31 @@
 
 #include <glm/glm.hpp>
 
+struct LightingUniVarBindings {
+    GLint ambientIntensityLocation = -1;
+    GLint ambientColourLocation = -1;
+    GLint diffuseIntensityLocation = -1;
+    GLint directionLocation = -1;
+    GLint positionLocation = -1;
+    GLint constantLocation = -1;
+    GLint linearLocation = -1;
+    GLint exponentLocation = -1;
+};
+
 class Light {
-   private:
+   protected:
     glm::vec3 colour;
     GLfloat ambientIntensity;
-
-    glm::vec3 direction;
     GLfloat diffuseIntensity;
 
    public:
     // these colour values are talking aout intensity not amount
-    Light( GLfloat red = 1.0f, GLfloat green = 1.0f, GLfloat blue = 1.0f, GLfloat aIntensity = 1.0f,
-           GLfloat xDir = 0.0f, GLfloat yDir = -1.0f, GLfloat zDir = 0.0f, GLfloat dIntensity = 1.0f );
-    ~Light();
+    Light( GLfloat red = 1.0f, GLfloat green = 1.0f, GLfloat blue = 1.0f,
+           GLfloat aIntensity = 1.0f, GLfloat dIntensity = 1.0f );
 
-    void useLight( GLuint ambientIntensityLocation, GLuint ambientColourLocation, GLuint diffuseIntensityLocation,
-                   GLuint directionLocation );
+    virtual ~Light() = default;
+
+    virtual void useLight( const LightingUniVarBindings& lighting ) const;
 };
 
 #endif  // _INCLUDED_LIGHT_H

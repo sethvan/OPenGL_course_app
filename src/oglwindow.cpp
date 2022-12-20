@@ -54,27 +54,30 @@ int OGLWindow::initialize() {
         return 1;
     }
 
-    // GL_DEPTH_TEST: Once enabled, OpenGL automatically stores fragments their z-values in the depth buffer if they
-    // passed the depth test and discards fragments if they failed the depth test accordingly. If you have depth testing
-    // enabled you should also clear the depth buffer before each frame using GL_DEPTH_BUFFER_BIT; otherwise you're
-    // stuck with the depth values from last frame:
+    // GL_DEPTH_TEST: Once enabled, OpenGL automatically stores fragments their z-values
+    // in the depth buffer if they passed the depth test and discards fragments if they
+    // failed the depth test accordingly. If you have depth testing enabled you should
+    // also clear the depth buffer before each frame using GL_DEPTH_BUFFER_BIT; otherwise
+    // you're stuck with the depth values from last frame:
     glEnable( GL_DEPTH_TEST );
 
     // Setup Viewport size
     glViewport( 0, 0, bufferWidth, bufferHeight );
 
     // Necessary to know what user owns the window
-    // Because the callbacks need to be static methods in order for glfw to call them this function stores the specific
-    // instance of `this` so it can later be retrieved by glfwGetWindowUserPointer() inside the callback to handle the
-    // correct and desired data.
+    // Because the callbacks need to be static methods in order for glfw to call them this
+    // function stores the specific instance of `this` so it can later be retrieved by
+    // glfwGetWindowUserPointer() inside the callback to handle the correct and desired
+    // data.
     glfwSetWindowUserPointer( mainWindow, this );
 
     return 0;
 }
 
-// This is a callback we created to handle the output from glfwSetKeyCallback() which are the input parameters
-// to this method.
-void OGLWindow::handleKeys( GLFWwindow* window, int key, int code, int action, int mode ) {
+// This is a callback we created to handle the output from glfwSetKeyCallback() which are
+// the input parameters to this method.
+void OGLWindow::handleKeys( GLFWwindow* window, int key, int code, int action,
+                            int mode ) {
     OGLWindow* theWindow = static_cast<OGLWindow*>( glfwGetWindowUserPointer( window ) );
     if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS ) {
         glfwSetWindowShouldClose( window, GL_TRUE );
