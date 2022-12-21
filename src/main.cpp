@@ -170,28 +170,28 @@ int main() {
 
     std::vector<PointLight> pointLights;
     pointLights.emplace_back( 0.0f, 0.0f, 1.0f,     // colour
-						      0.0f, 0.1f,           // aIntensity, dIntensity
-						      0.0f, 0.0f, 0.0f,     // position
-						      0.3f, 0.2f, 0.1f );   // constant, linear, exponent <- attenuation
+                              0.0f, 0.1f,           // aIntensity, dIntensity
+                              0.0f, 0.0f, 0.0f,     // position
+                              0.3f, 0.2f, 0.1f );   // constant, linear, exponent <- attenuation
 
     pointLights.emplace_back( 0.0f, 1.0f, 0.0f,
-							  0.0f, 0.1f,
-							  -4.0f, 2.0f, 0.0f,
-							  0.3f, 0.1f, 0.1f );
+                              0.0f, 0.1f,
+                              -4.0f, 2.0f, 0.0f,
+                              0.3f, 0.1f, 0.1f );
 
     std::vector<SpotLight> spotLights;
     spotLights.emplace_back( 1.0f, 1.0f, 1.0f,     // colour
-						     0.0f, 2.0f,           // aIntensity, dIntensity
-						     0.0f, 0.0f, 0.0f,     // position
+                             0.0f, 2.0f,           // aIntensity, dIntensity
+                             0.0f, 0.0f, 0.0f,     // position
                              0.0f, -1.0f, 0.0f,    // direction
-						     1.0f, 0.0f, 0.0f,     // constant, linear, exponent
+                             1.0f, 0.0f, 0.0f,     // constant, linear, exponent
                              20.0f );              // edge
 
      spotLights.emplace_back( 1.0f, 1.0f, 1.0f,     // colour
-						     0.0f, 1.0f,           // aIntensity, dIntensity
-						     0.0f, -1.5f, 0.0f,     // position
+                             0.0f, 1.0f,           // aIntensity, dIntensity
+                             0.0f, -1.5f, 0.0f,     // position
                              -100.0f, -1.0f, 0.0f, // direction
-						     1.0f, 0.0f, 0.0f,     // constant, linear, exponent 
+                             1.0f, 0.0f, 0.0f,     // constant, linear, exponent 
                              20.0f );              // edge
     // clang-format on
 
