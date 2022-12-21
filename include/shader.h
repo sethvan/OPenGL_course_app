@@ -10,16 +10,20 @@
 
 #include "directionallight.h"
 #include "pointlight.h"
+#include "spotlight.h"
 
 #define MAX_POINT_LIGHTS 3
+#define MAX_SPOT_LIGHTS 3
 
 class Shader {
    private:
     GLuint shaderID;
     GLint uniformProjection, uniformModel, uniformView, uniformEyePosition,
-        uniformSpecularIntensity, uniformShininess, uniformPointLightCount;
+        uniformSpecularIntensity, uniformShininess, uniformPointLightCount,
+        uniformSpotLightCount;
     std::vector<LightingUniVarBindings> uniformPointLight;
     LightingUniVarBindings uniformDirectionalLight;
+    std::vector<LightingUniVarBindings> uniformSpotLight;
 
     void addShader( GLuint theProgram, const char* shaderCode, GLenum shaderType );
     void compileShader( const char* vertexCode, const char* fragmentCode );
@@ -42,6 +46,7 @@ class Shader {
     void clearShader();
     void setDirectionalLight( DirectionalLight& dLight ) const;
     void setPointLights( std::vector<PointLight>& pLight ) const;
+    void setSpotLights( std::vector<SpotLight>& sLight ) const;
 };
 
 #endif

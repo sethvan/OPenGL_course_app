@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cassert>
 #include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,7 +16,9 @@
 #include "material.h"
 #include "mesh.h"
 #include "oglwindow.h"
+#include "pointlight.h"
 #include "shader.h"
+#include "spotlight.h"
 #include "texture.h"
 
 // A mesh is a collection of vertices, faces and edges that define the shape of a 3d
@@ -147,8 +150,8 @@ int main() {
     uniformSpecularIntensity = shaderList[0].getSpecularIntensityLocation();
     uniformShininess = shaderList[0].getShininessLocation();
 
-    Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -90.0f,
-                   0.0f, 2.5f, 0.2f );
+    Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f,
+                   0.0f, 5.0f, 0.5f );
 
     Texture brickTexture( "res/textures/brick.png" );
     brickTexture.loadTexture();
@@ -162,26 +165,41 @@ int main() {
 
     // clang-format off
     DirectionalLight mainLight( 1.0f, 1.0f, 1.0f,   // colour
-                                0.1f, 0.3f,         // aIntensity, dIntensity
+                                0.1f, 0.1f,         // aIntensity, dIntensity
                                 0.0f, 0.0f, -1.0f );// direction
 
     std::vector<PointLight> pointLights;
     pointLights.emplace_back( 0.0f, 0.0f, 1.0f,     // colour
-						      0.0f, 1.0f,           // aIntensity, dIntensity
+						      0.0f, 0.1f,           // aIntensity, dIntensity
 						      0.0f, 0.0f, 0.0f,     // position
-						      0.3f, 0.2f, 0.1f );   // constant, linear, exponent
+						      0.3f, 0.2f, 0.1f );   // constant, linear, exponent <- attenuation
 
     pointLights.emplace_back( 0.0f, 1.0f, 0.0f,
-							  0.0f, 1.0f,
+							  0.0f, 0.1f,
 							  -4.0f, 2.0f, 0.0f,
 							  0.3f, 0.1f, 0.1f );
+
+    std::vector<SpotLight> spotLights;
+    spotLights.emplace_back( 1.0f, 1.0f, 1.0f,     // colour
+						     0.0f, 2.0f,           // aIntensity, dIntensity
+						     0.0f, 0.0f, 0.0f,     // position
+                             0.0f, -1.0f, 0.0f,    // direction
+						     1.0f, 0.0f, 0.0f,     // constant, linear, exponent
+                             20.0f );              // edge
+
+     spotLights.emplace_back( 1.0f, 1.0f, 1.0f,     // colour
+						     0.0f, 1.0f,           // aIntensity, dIntensity
+						     0.0f, -1.5f, 0.0f,     // position
+                             -100.0f, -1.0f, 0.0f, // direction
+						     1.0f, 0.0f, 0.0f,     // constant, linear, exponent 
+                             20.0f );              // edge
     // clang-format on
 
     // says he only needs to make this once and not recalculate it
     // therefore not in while loop
+
     glm::mat4 projection = glm::perspective(
         45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f );
-
     // Loop until window closed
     while ( !mainWindow.getShouldClose() ) {
 
@@ -198,9 +216,15 @@ int main() {
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+        glm::vec3 lowerLight = camera.getCameraPosition();
+        lowerLight.y -= 0.3f;
+        spotLights[0].setFlash( lowerLight, camera.getCameraDirection() );
+
         shaderList[0].useShader();
         shaderList[0].setDirectionalLight( mainLight );
         shaderList[0].setPointLights( pointLights );
+
+        shaderList[0].setSpotLights( spotLights );
 
         glUniformMatrix4fv( uniformProjection, 1, GL_FALSE,
                             glm::value_ptr( projection ) );
@@ -232,7 +256,7 @@ int main() {
         model = glm::translate( model, glm::vec3( 0.0f, -2.0f, 0.0f ) );
         // model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
         glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-        plainTexture.useTexture();
+        dirtTexture.useTexture();
         shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
         meshList[2].renderMesh();
 

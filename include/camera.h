@@ -26,14 +26,14 @@ class Camera {
 
    public:
     Camera() = default;
-    Camera( glm::vec3 startPosition, glm::vec3 startWorldUp, GLfloat startYaw, GLfloat startPitch,
-            GLfloat startMovementSpeed, GLfloat startTurnSpeed );
-    ~Camera();
+    Camera( glm::vec3 startPosition, glm::vec3 startWorldUp, GLfloat startYaw,
+            GLfloat startPitch, GLfloat startMovementSpeed, GLfloat startTurnSpeed );
 
     void keyControl( bool* keys, GLfloat deltaTime );
     void mouseControl( GLfloat xChange, GLfloat yChange );
     glm::mat4 calculateViewMatrix();
     glm::vec3 getCameraPosition() const;
+    glm::vec3 getCameraDirection();
 };
 
 #endif  // _INCLUDED_CAMERA_H

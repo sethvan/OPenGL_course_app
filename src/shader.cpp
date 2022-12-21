@@ -46,6 +46,7 @@ Shader::Shader()
       uniformShininess{ -1 },
       uniformPointLightCount{ 0 } {
     uniformPointLight.reserve( MAX_POINT_LIGHTS );
+    uniformSpotLight.reserve( MAX_SPOT_LIGHTS );
 }
 
 void Shader::createFromString( const char* vertexCode, const char* fragmentCode ) {
@@ -98,6 +99,7 @@ void Shader::compileShader( const char* vertexCode, const char* fragmentCode ) {
     uniformShininess = glGetUniformLocation( shaderID, "material.shininess" );
     uniformEyePosition = glGetUniformLocation( shaderID, "eyePosition" );
     uniformPointLightCount = glGetUniformLocation( shaderID, "pointLightCount" );
+    uniformSpotLightCount = glGetUniformLocation( shaderID, "spotLightCount" );
 
     for ( size_t i = 0; i < MAX_POINT_LIGHTS; i++ ) {
         char locBuff[100] = { '\0' };
@@ -127,6 +129,42 @@ void Shader::compileShader( const char* vertexCode, const char* fragmentCode ) {
 
         snprintf( locBuff, sizeof( locBuff ), "pointLights[%zu].exponent", i );
         uniformPointLight[i].exponentLocation = glGetUniformLocation( shaderID, locBuff );
+    }
+
+    for ( size_t i = 0; i < MAX_SPOT_LIGHTS; i++ ) {
+        char locBuff[100] = { '\0' };
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].base.base.colour", i );
+        uniformSpotLight[i].ambientColourLocation =
+            glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ),
+                  "spotLights[%zu].base.base.ambientIntensity", i );
+        uniformSpotLight[i].ambientIntensityLocation =
+            glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ),
+                  "spotLights[%zu].base.base.diffuseIntensity", i );
+        uniformSpotLight[i].diffuseIntensityLocation =
+            glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].direction", i );
+        uniformSpotLight[i].directionLocation = glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].base.position", i );
+        uniformSpotLight[i].positionLocation = glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].base.constant", i );
+        uniformSpotLight[i].constantLocation = glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].base.linear", i );
+        uniformSpotLight[i].linearLocation = glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].base.exponent", i );
+        uniformSpotLight[i].exponentLocation = glGetUniformLocation( shaderID, locBuff );
+
+        snprintf( locBuff, sizeof( locBuff ), "spotLights[%zu].edge", i );
+        uniformSpotLight[i].edgeLocation = glGetUniformLocation( shaderID, locBuff );
     }
 }
 
@@ -217,9 +255,9 @@ void Shader::setPointLights( std::vector<PointLight>& pLight ) const {
     if ( lightCount > MAX_POINT_LIGHTS )
         lightCount = MAX_POINT_LIGHTS;
 
-    glUniform1i( uniformPointLightCount, lightCount );
+    glUniform1i( uniformPointLightCount, 0 /*lightCount*/ );
 
-    for ( size_t i = 0; i < lightCount; i++ ) {
+    for ( int i = 0; i < lightCount; i++ ) {
         pLight[i].useLight(
             { .ambientIntensityLocation = uniformPointLight[i].ambientIntensityLocation,
               .ambientColourLocation = uniformPointLight[i].ambientColourLocation,
@@ -228,6 +266,27 @@ void Shader::setPointLights( std::vector<PointLight>& pLight ) const {
               .constantLocation = uniformPointLight[i].constantLocation,
               .linearLocation = uniformPointLight[i].linearLocation,
               .exponentLocation = uniformPointLight[i].exponentLocation } );
+    }
+}
+
+void Shader::setSpotLights( std::vector<SpotLight>& sLight ) const {
+    int lightCount = sLight.size();
+    if ( lightCount > MAX_SPOT_LIGHTS )
+        lightCount = MAX_SPOT_LIGHTS;
+
+    glUniform1i( uniformSpotLightCount, lightCount );
+
+    for ( size_t i = 0; i < lightCount; i++ ) {
+        sLight[i].useLight(
+            { .ambientIntensityLocation = uniformSpotLight[i].ambientIntensityLocation,
+              .ambientColourLocation = uniformSpotLight[i].ambientColourLocation,
+              .diffuseIntensityLocation = uniformSpotLight[i].diffuseIntensityLocation,
+              .directionLocation = uniformSpotLight[i].directionLocation,
+              .positionLocation = uniformSpotLight[i].positionLocation,
+              .constantLocation = uniformSpotLight[i].constantLocation,
+              .linearLocation = uniformSpotLight[i].linearLocation,
+              .exponentLocation = uniformSpotLight[i].exponentLocation,
+              .edgeLocation = uniformSpotLight[i].edgeLocation } );
     }
 }
 

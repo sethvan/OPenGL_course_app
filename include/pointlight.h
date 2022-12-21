@@ -4,7 +4,7 @@
 #include "light.h"
 
 class PointLight : public Light {
-   private:
+   protected:
     glm::vec3 position;
 
     // for attenuation = 0.0f, L / (ax^2 + bx + c)

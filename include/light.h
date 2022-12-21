@@ -14,6 +14,7 @@ struct LightingUniVarBindings {
     GLint constantLocation = -1;
     GLint linearLocation = -1;
     GLint exponentLocation = -1;
+    GLint edgeLocation = -1;
 };
 
 class Light {
