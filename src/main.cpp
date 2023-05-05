@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <assimp/Importer.hpp>
 #include <cassert>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -34,13 +35,13 @@ std::vector<Shader> shaderList;
 // like mathematically the average between all the faces that a vertex is a component of
 // is calculated by adding them altogether. That average is what is set for each vertex.
 // The second for loop then normalizes that calculated average.
-void calcAverageNormals( std::vector<GLuint>& indices, std::vector<GLfloat>& vertices,
-                         unsigned int vLength, unsigned int normalOffset ) {
-    for ( size_t i = 0; i < indices.size(); i += 3 ) {
-        unsigned int in0 = indices[i] * vLength;
-        unsigned int in1 = indices[i + 1] * vLength;
-        unsigned int in2 = indices[i + 2] * vLength;
-        // clang-format off
+void calcAverageNormals( std::vector<GLuint>& indices, std::vector<GLfloat>& vertices, unsigned int vLength,
+                         unsigned int normalOffset ) {
+   for ( size_t i = 0; i < indices.size(); i += 3 ) {
+      unsigned int in0 = indices[ i ] * vLength;
+      unsigned int in1 = indices[ i + 1 ] * vLength;
+      unsigned int in2 = indices[ i + 2 ] * vLength;
+      // clang-format off
         // Calculate normal by cross product to get perpendicular angle to two lines of triangle
         glm::vec3 v1( vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2] );
         glm::vec3 v2( vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2] );
@@ -103,76 +104,70 @@ void CreateObjects() {
 	std::vector<GLfloat> floorVertices = {
 		-10.0f, 0.0f, -10.0f,	0.0f,  0.0f,	0.0f, -1.0f, 0.0f,
 		10.0f,  0.0f, -10.0f,	10.0f, 0.0f,	0.0f, -1.0f, 0.0f,
-		-10.0f, 0.0f, 10.0f,	0.0f,  10.0f,	0.0f, -1.0f, 0.0f,
+		-10.0f, 0.0f, 10.0f,	   0.0f,  10.0f,	0.0f, -1.0f, 0.0f,
 		10.0f,  0.0f, 10.0f,    10.0f, 10.0f,	0.0f, -1.0f, 0.0f
 	};
 
-    // clang-format on
+   // clang-format on
 
-    calcAverageNormals( indices, vertices, 8, 5 );
+   calcAverageNormals( indices, vertices, 8, 5 );
 
-    meshList.emplace_back( Mesh() );
-    meshList.emplace_back( Mesh() );
-    meshList.emplace_back( Mesh() );
+   meshList.emplace_back( Mesh() );
+   meshList.emplace_back( Mesh() );
+   meshList.emplace_back( Mesh() );
 
-    meshList[0].createMesh( vertices.data(), indices.data(), vertices.size(),
-                            indices.size() );
-    meshList[1].createMesh( vertices.data(), indices.data(), vertices.size(),
-                            indices.size() );
-    meshList[2].createMesh( floorVertices.data(), floorIndices.data(),
-                            floorVertices.size(), floorIndices.size() );
+   meshList[ 0 ].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
+   meshList[ 1 ].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
+   meshList[ 2 ].createMesh( floorVertices.data(), floorIndices.data(), floorVertices.size(), floorIndices.size() );
 }
 
 // Each Shader object here actually contains both a vertex and fragment shader
 void createShaders() {
-    shaderList.emplace_back();
-    shaderList[0].getShadersFromFiles( "res/shaders/vertex1.shader",
-                                       "res/shaders/fragment1.shader" );
+   shaderList.emplace_back();
+   shaderList[ 0 ].getShadersFromFiles( "res/shaders/vertex1.shader", "res/shaders/fragment1.shader" );
 }
 
 int main() {
+   OGLWindow mainWindow( 2866, 1768 );
+   mainWindow.initialize();
 
-    OGLWindow mainWindow( 1366, 768 );
-    mainWindow.initialize();
+   CreateObjects();
+   createShaders();
 
-    CreateObjects();
-    createShaders();
+   // per experimenting I suspect uniforms must always be initialized to 0 before getting
+   // their location
+   GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformEyePosition = 0,
+          uniformSpecularIntensity = 0, uniformShininess = 0;
 
-    // per experimenting I suspect uniforms must always be initialized to 0 before getting
-    // their location
-    GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0,
-           uniformEyePosition = 0, uniformSpecularIntensity = 0, uniformShininess = 0;
+   uniformModel = shaderList[ 0 ].getModelLocation();
+   uniformProjection = shaderList[ 0 ].getProjectionLocation();
+   uniformView = shaderList[ 0 ].getViewLocation();
+   uniformEyePosition = shaderList[ 0 ].getEyePositionLocation();
+   uniformSpecularIntensity = shaderList[ 0 ].getSpecularIntensityLocation();
+   uniformShininess = shaderList[ 0 ].getShininessLocation();
 
-    uniformModel = shaderList[0].getModelLocation();
-    uniformProjection = shaderList[0].getProjectionLocation();
-    uniformView = shaderList[0].getViewLocation();
-    uniformEyePosition = shaderList[0].getEyePositionLocation();
-    uniformSpecularIntensity = shaderList[0].getSpecularIntensityLocation();
-    uniformShininess = shaderList[0].getShininessLocation();
+   Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f, 0.0f, 5.0f, 0.5f );
 
-    Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f,
-                   0.0f, 5.0f, 0.5f );
+   Texture brickTexture( "res/textures/brick.png" );
+   brickTexture.loadTexture();
+   Texture dirtTexture( "res/textures/dirt.png" );
+   dirtTexture.loadTexture();
+   Texture plainTexture( "res/textures/plain.png" );
+   plainTexture.loadTexture();
 
-    Texture brickTexture( "res/textures/brick.png" );
-    brickTexture.loadTexture();
-    Texture dirtTexture( "res/textures/dirt.png" );
-    dirtTexture.loadTexture();
-    Texture plainTexture( "res/textures/plain.png" );
-    plainTexture.loadTexture();
+   Material shinyMaterial( 1.0f, 32 );
+   Material dullMaterial( 0.3f, 4 );
 
-    Material shinyMaterial( 1.0f, 32 );
-    Material dullMaterial( 0.3f, 4 );
-
-    // clang-format off
+   // clang-format off
     DirectionalLight mainLight( 1.0f, 1.0f, 1.0f,   // colour
                                 0.1f, 0.1f,         // aIntensity, dIntensity
                                 0.0f, 0.0f, -1.0f );// direction
 
     std::vector<PointLight> pointLights;
-    pointLights.emplace_back( 0.0f, 0.0f, 1.0f,     // colour
-                              0.0f, 0.1f,           // aIntensity, dIntensity
-                              0.0f, 0.0f, 0.0f,     // position
-                              0.3f, 0.2f, 0.1f );   // constant, linear, exponent <- attenuation
+    pointLights.emplace_back( 0.0f, 0.0f, 1.0f,
+								      0.0f, 1.0f,
+							      	0.0f, 0.0f, 0.0f,
+							      	0.3f, 0.2f, 0.1f );   // constant, linear, exponent <- attenuation
 
     pointLights.emplace_back( 0.0f, 1.0f, 0.0f,
                               0.0f, 0.1f,
@@ -184,86 +179,84 @@ int main() {
                              0.0f, 2.0f,           // aIntensity, dIntensity
                              0.0f, 0.0f, 0.0f,     // position
                              0.0f, -1.0f, 0.0f,    // direction
-                             1.0f, 0.0f, 0.0f,     // constant, linear, exponent
+                             1.0f, 0.0f, 0.007f,     // constant, linear, exponent
                              20.0f );              // edge
 
      spotLights.emplace_back( 1.0f, 1.0f, 1.0f,     // colour
                              0.0f, 1.0f,           // aIntensity, dIntensity
                              0.0f, -1.5f, 0.0f,     // position
                              -100.0f, -1.0f, 0.0f, // direction
-                             1.0f, 0.0f, 0.0f,     // constant, linear, exponent 
+                             1.0f, 0.0f, 0.007f,     // constant, linear, exponent 
                              20.0f );              // edge
-    // clang-format on
+   // clang-format on
 
-    // says he only needs to make this once and not recalculate it
-    // therefore not in while loop
+   // says he only needs to make this once and not recalculate it
+   // therefore not in while loop
 
-    glm::mat4 projection = glm::perspective(
-        45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f );
-    // Loop until window closed
-    while ( !mainWindow.getShouldClose() ) {
+   glm::mat4 projection =
+       glm::perspective( 45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f );
+   // Loop until window closed
+   while ( !mainWindow.getShouldClose() ) {
+      GLfloat now = glfwGetTime();
+      deltaTime = now - lastTime;
+      lastTime = now;
 
-        GLfloat now = glfwGetTime();
-        deltaTime = now - lastTime;
-        lastTime = now;
+      glfwPollEvents();
 
-        glfwPollEvents();
+      camera.keyControl( mainWindow.getKeys(), deltaTime );
+      camera.mouseControl( mainWindow.getXChange(), mainWindow.getYChange() );
+      camera.scrollControll( mainWindow.getYOffset(), deltaTime );
 
-        camera.keyControl( mainWindow.getKeys(), deltaTime );
-        camera.mouseControl( mainWindow.getXChange(), mainWindow.getYChange() );
+      // Clear window
+      glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        // Clear window
-        glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+      glm::vec3 lowerLight = camera.getCameraPosition();
+      lowerLight.y -= 0.3f;
+      spotLights[ 0 ].setFlash( lowerLight, camera.getCameraDirection() );
 
-        glm::vec3 lowerLight = camera.getCameraPosition();
-        lowerLight.y -= 0.3f;
-        spotLights[0].setFlash( lowerLight, camera.getCameraDirection() );
+      shaderList[ 0 ].useShader();
+      shaderList[ 0 ].setDirectionalLight( mainLight );
+      shaderList[ 0 ].setPointLights( pointLights );
 
-        shaderList[0].useShader();
-        shaderList[0].setDirectionalLight( mainLight );
-        shaderList[0].setPointLights( pointLights );
+      shaderList[ 0 ].setSpotLights( spotLights );
 
-        shaderList[0].setSpotLights( spotLights );
+      glUniformMatrix4fv( uniformProjection, 1, GL_FALSE, glm::value_ptr( projection ) );
+      glUniformMatrix4fv( uniformView, 1, GL_FALSE, glm::value_ptr( camera.calculateViewMatrix() ) );
+      glUniform3f( uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y,
+                   camera.getCameraPosition().z );
 
-        glUniformMatrix4fv( uniformProjection, 1, GL_FALSE,
-                            glm::value_ptr( projection ) );
-        glUniformMatrix4fv( uniformView, 1, GL_FALSE,
-                            glm::value_ptr( camera.calculateViewMatrix() ) );
-        glUniform3f( uniformEyePosition, camera.getCameraPosition().x,
-                     camera.getCameraPosition().y, camera.getCameraPosition().z );
+      glm::mat4 model( 1.0f );
 
-        glm::mat4 model( 1.0f );
+      model = glm::translate( model, glm::vec3( 0.0f, 0.0f, -2.5f ) );
+      // model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
+      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
 
-        model = glm::translate( model, glm::vec3( 0.0f, 0.0f, -2.5f ) );
-        // model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
-        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+      brickTexture.useTexture();
+      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+      meshList[ 0 ].renderMesh();
 
-        brickTexture.useTexture();
-        shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-        meshList[0].renderMesh();
+      model = glm::mat4( 1.0f );
+      model = glm::translate( model, glm::vec3( 0.0f, 2.5f, -2.5f ) );
+      // model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
+      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
 
-        model = glm::mat4( 1.0f );
-        model = glm::translate( model, glm::vec3( 0.0f, 2.5f, -2.5f ) );
-        // model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
-        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+      dirtTexture.useTexture();
+      dullMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+      meshList[ 1 ].renderMesh();
 
-        dirtTexture.useTexture();
-        dullMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-        meshList[1].renderMesh();
+      model = glm::mat4( 1.0f );
+      model = glm::translate( model, glm::vec3( 0.0f, -2.0f, 0.0f ) );
+      // model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+      dirtTexture.useTexture();
+      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+      meshList[ 2 ].renderMesh();
 
-        model = glm::mat4( 1.0f );
-        model = glm::translate( model, glm::vec3( 0.0f, -2.0f, 0.0f ) );
-        // model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
-        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-        dirtTexture.useTexture();
-        shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-        meshList[2].renderMesh();
+      glUseProgram( 0 );
 
-        glUseProgram( 0 );
+      mainWindow.swapBuffers();
+   }
 
-        mainWindow.swapBuffers();
-    }
-
-    return 0;
+   return 0;
 }

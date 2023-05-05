@@ -152,7 +152,7 @@ vec4 CalcSpotLights()
                                                                               
 void main()                                                                   
 {
-    vec4 finalColour = CalcDirectionalLight();
+   vec4 finalColour = CalcDirectionalLight();
 	finalColour += CalcPointLights();
 	finalColour += CalcSpotLights();
 	

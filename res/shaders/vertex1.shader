@@ -20,7 +20,7 @@ void main()
     TexCoord = tex;
     
     // Using the model to account for any changes in rotation and scaling.
-    // Using 3*3 matrix because we do not want to take into account any transorms 
+    // Using 3*3 matrix because we do not want to take into account any transforms 
     // because the norm is just a direction and not a position. 
     // The transpose is necessary if you have non-uniform scaling
     Normal = mat3(transpose(inverse(model))) * norm;     
