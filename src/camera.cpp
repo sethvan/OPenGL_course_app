@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include <iostream>
+
 Camera::Camera( glm::vec3 startPosition, glm::vec3 startWorldUp, GLfloat startYaw, GLfloat startPitch,
                 GLfloat startMovementSpeed, GLfloat startTurnSpeed )
     : position{ startPosition },

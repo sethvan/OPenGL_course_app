@@ -13,6 +13,7 @@ src/material.cpp
 src/directionallight.cpp
 src/pointlight.cpp
 src/spotlight.cpp
+src/model.cpp
 src/main.cpp )
 
 
@@ -21,20 +22,21 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
+set(CMAKE_POLICY_DEFAULT_CMP0012 NEW) # for error with assimp
+find_package(assimp CONFIG REQUIRED)
+set_target_properties(assimp::assimp PROPERTIES IMPORTED_LOCATION "/home/sethvan/vcpkg/packages/assimp_x64-linux/lib/libassimp.a")
+
+
 target_link_libraries(oglapp PRIVATE
     glfw
     glm::glm
     GLEW::GLEW
+    assimp::assimp
 )
 
-target_include_directories(oglapp PRIVATE
-    include
-    ${GLFW3_INCLUDE_DIRS}
-    ${GLM_INCLUDE_DIRS}
-	 ${GLEW_INCLUDE_DIRS}
-)
+target_include_directories( oglapp PRIVATE include )
 
-target_compile_features( oglapp PRIVATE cxx_std_17)
+target_compile_features( oglapp PRIVATE cxx_std_20)
 target_link_options( oglapp PRIVATE -ldl -fsanitize=address )
 target_compile_options( oglapp PRIVATE 
 	-Wall -Wextra -Wl,-z,defs -ldl -fwrapv -Og

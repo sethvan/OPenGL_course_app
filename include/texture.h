@@ -2,23 +2,29 @@
 #define _INCLUDED_TEXTURE_H
 
 #include <GL/glew.h>
-
+#include <string>
 #include "stb_image.h"
 
+class Model;
+
 class Texture {
-   private:
-    GLuint textureID;
-    int width, height, bitDepth;
+  private:
+   friend class Model;
 
-    const char* fileLocation;
+   GLuint textureID;
+   int width, height, bitDepth;
 
-   public:
-    Texture( const char* fileLoc = "" );
-    ~Texture();
+  std::string fileLocation;
 
-    void loadTexture();
-    void useTexture();
-    void clearTexture();
+  public:
+   Texture( const std::string& fileLoc );
+   ~Texture();
+
+   bool loadTexture();   // for without alpha channel
+   bool loadTextureA();  // for with alpha channel
+
+   void useTexture();
+   void clearTexture();
 };
 
 #endif  // _INCLUDED_TEXTURE_H

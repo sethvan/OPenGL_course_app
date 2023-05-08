@@ -7,29 +7,44 @@
 #include <assimp/Importer.hpp>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <random>
 #include <vector>
 
 #include "camera.h"
 #include "directionallight.h"
 #include "material.h"
 #include "mesh.h"
+#include "model.h"
 #include "oglwindow.h"
 #include "pointlight.h"
 #include "shader.h"
 #include "spotlight.h"
 #include "texture.h"
 
+// rando stuff
+// Define a random number generator engine
+std::random_device rd;
+std::default_random_engine eng( rd() );
+
+// Define the range of the random number
+float lower_bound = 200.0f;
+float upper_bound = 300.0f;
+
+// Define the distribution that produces numbers within the range
+std::uniform_real_distribution<> distr( lower_bound, upper_bound );
+
 // A mesh is a collection of vertices, faces and edges that define the shape of a 3d
 // object
 std::vector<Mesh> meshList;
 std::vector<Shader> shaderList;
 
-// static float toRadians( const float degrees ) {
-//     return degrees / 57.29578f;
-// }
+static float toRadians( const float degrees ) {
+   return degrees / 57.29578f;
+}
 
 // I believe this takes the normal of each face that a vertex is a part of and it looks
 // like mathematically the average between all the faces that a vertex is a component of
@@ -102,10 +117,10 @@ void CreateObjects() {
 	};
 
 	std::vector<GLfloat> floorVertices = {
-		-10.0f, 0.0f, -10.0f,	0.0f,  0.0f,	0.0f, -1.0f, 0.0f,
-		10.0f,  0.0f, -10.0f,	10.0f, 0.0f,	0.0f, -1.0f, 0.0f,
-		-10.0f, 0.0f, 10.0f,	   0.0f,  10.0f,	0.0f, -1.0f, 0.0f,
-		10.0f,  0.0f, 10.0f,    10.0f, 10.0f,	0.0f, -1.0f, 0.0f
+		-100.0f, 0.0f, -100.0f,	0.0f,  0.0f,	0.0f, -1.0f, 0.0f,
+		100.0f,  0.0f, -100.0f,	100.0f, 0.0f,	0.0f, -1.0f, 0.0f,
+		-100.0f, 0.0f, 100.0f,	   0.0f,  100.0f,	0.0f, -1.0f, 0.0f,
+		100.0f,  0.0f, 100.0f,    100.0f, 100.0f,	0.0f, -1.0f, 0.0f
 	};
 
    // clang-format on
@@ -128,6 +143,18 @@ void createShaders() {
 }
 
 int main() {
+   bool direction = true;
+   float triOffset = 0.0f;
+   float triMaxOffset = 0.7f;
+   float triIncrement = 0.0005f;
+
+   int count = 0;
+   int limit = distr( eng );
+   float increment = 0.3f;
+
+   float curAngle = 0.0f;
+   float curAlt = 0.0f;
+
    OGLWindow mainWindow( 2866, 1768 );
    mainWindow.initialize();
 
@@ -146,17 +173,22 @@ int main() {
    uniformSpecularIntensity = shaderList[ 0 ].getSpecularIntensityLocation();
    uniformShininess = shaderList[ 0 ].getShininessLocation();
 
-   Camera camera( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f, 0.0f, 5.0f, 0.5f );
+   Camera camera( glm::vec3( 0.0f, 0.25f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f, 0.0f, 20.0f, 0.06f );
 
    Texture brickTexture( "res/textures/brick.png" );
-   brickTexture.loadTexture();
+   brickTexture.loadTextureA();
    Texture dirtTexture( "res/textures/dirt.png" );
-   dirtTexture.loadTexture();
+   dirtTexture.loadTextureA();
    Texture plainTexture( "res/textures/plain.png" );
-   plainTexture.loadTexture();
+   plainTexture.loadTextureA();
 
    Material shinyMaterial( 1.0f, 32 );
    Material dullMaterial( 0.3f, 4 );
+
+   Model xwing;
+   xwing.loadModel( "res/models/x-wing.obj" );
+   Model vaderTie;
+   vaderTie.loadModel( "res/models/Star Wars vader tie.obj" );
 
    // clang-format off
     DirectionalLight mainLight( 1.0f, 1.0f, 1.0f,   // colour
@@ -197,9 +229,39 @@ int main() {
        glm::perspective( 45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f );
    // Loop until window closed
    while ( !mainWindow.getShouldClose() ) {
+      if ( direction ) {
+         triOffset += triIncrement;
+      } else {
+         triOffset -= triIncrement;
+      }
+
+      if ( abs( triOffset ) >= triMaxOffset ) {
+         direction = !direction;
+      }
+
+      curAngle -= 0.22f;
+      if ( curAngle >= 360 ) {
+         curAngle -= 360;
+      }
+
       GLfloat now = glfwGetTime();
       deltaTime = now - lastTime;
       lastTime = now;
+
+      if ( ++count > static_cast<int>( limit ) ) {
+         count = 0;
+         limit = distr( eng );
+
+         increment *= -1;
+         std::cerr << "limit: " << limit << '\n';
+      }
+      if ( curAlt > 1.5f ) {
+         curAlt -= abs( increment * deltaTime );
+      } else if ( curAlt < -1.5f ) {
+         curAlt += abs( increment * deltaTime );
+      } else {
+         curAlt += ( increment * deltaTime );
+      }
 
       glfwPollEvents();
 
@@ -225,33 +287,56 @@ int main() {
       glUniformMatrix4fv( uniformView, 1, GL_FALSE, glm::value_ptr( camera.calculateViewMatrix() ) );
       glUniform3f( uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y,
                    camera.getCameraPosition().z );
+      auto position = camera.getCameraPosition();
+      // auto change = position - lastPosition;
+      // lastPosition = position;
+      // std::cerr << "Change: " << change.x << ", " << change.y << ", " << change.z << '\n';
 
-      glm::mat4 model( 1.0f );
-
-      model = glm::translate( model, glm::vec3( 0.0f, 0.0f, -2.5f ) );
-      // model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
-      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-
-      brickTexture.useTexture();
-      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-      meshList[ 0 ].renderMesh();
-
-      model = glm::mat4( 1.0f );
-      model = glm::translate( model, glm::vec3( 0.0f, 2.5f, -2.5f ) );
-      // model = glm::scale( model, glm::vec3( 0.4f, 0.4f, 1.0f ) );
-      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-
-      dirtTexture.useTexture();
-      dullMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-      meshList[ 1 ].renderMesh();
-
-      model = glm::mat4( 1.0f );
+      auto model = glm::mat4( 1.0f );
       model = glm::translate( model, glm::vec3( 0.0f, -2.0f, 0.0f ) );
       // model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
       glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
       dirtTexture.useTexture();
       shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
       meshList[ 2 ].renderMesh();
+
+      model = glm::mat4( 1.0f );
+
+      model = glm::rotate( model, toRadians( curAngle ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+      model = glm::translate( model, glm::vec3( 90.0f, curAlt + 0.75f, 0.0f ) );
+      // model = glm::rotate( model, toRadians( -10.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+      model = glm::rotate( model, toRadians( 37.0f - ( curAlt * 20.0f ) ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+
+      model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+      model = glm::translate( model, glm::vec3( -1400.0172f, -108.2528f, 1722.1118f ) );
+
+      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+      xwing.renderModel();
+
+      model = glm::mat4( 1.0f );
+      model = glm::rotate( model, toRadians( curAngle + 5.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+      model = glm::translate( model, glm::vec3( 90.0f, -curAlt + 1.0f, 0.0f ) );
+      model = glm::rotate( model, toRadians( 20.0f + ( curAlt * 20.0f ) ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+      model = glm::rotate( model, toRadians( -25.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+      model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+      model = glm::translate( model, glm::vec3( 109.477, -720.436, 320.566 ) );
+
+      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+      vaderTie.renderModel();
+
+      model = glm::mat4( 1.0f );
+      // model = glm::translate( model, change );
+      model = glm::rotate( model, toRadians( 152.25f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+      model = glm::translate( model, glm::vec3( -0.1f, 0.0f, 1.5f ) );
+      model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+      model = glm::translate(
+          model, glm::vec3( -position.x - 1400.0172f, -position.y - 108.2528f, -position.z + 1722.1118f ) );
+
+      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+      xwing.renderModel();
 
       glUseProgram( 0 );
 
