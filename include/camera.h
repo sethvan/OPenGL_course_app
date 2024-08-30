@@ -16,15 +16,15 @@ class Camera {
    glm::vec3 worldUp;
    glm::vec3 direction;
 
-   GLfloat yaw;    // left and right
-   GLfloat pitch;  // up and down
-
    GLfloat movementSpeed;
    GLfloat turnSpeed;
 
    void update();
 
   public:
+   GLfloat yaw;    // left and right
+   GLfloat pitch;  // up and down
+
    Camera() = default;
    Camera( glm::vec3 startPosition, glm::vec3 startWorldUp, GLfloat startYaw, GLfloat startPitch,
            GLfloat startMovementSpeed, GLfloat startTurnSpeed );

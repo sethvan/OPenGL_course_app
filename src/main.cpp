@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iomanip>
+#include <iostream>
 #include <random>
 #include <vector>
 
@@ -42,21 +44,23 @@ std::uniform_real_distribution<> distr( lower_bound, upper_bound );
 std::vector<Mesh> meshList;
 std::vector<Shader> shaderList;
 
-static float toRadians( const float degrees ) {
-   return degrees / 57.29578f;
+static float toRadians( const float degrees )
+{
+    return degrees / 57.29578f;
 }
 
 // I believe this takes the normal of each face that a vertex is a part of and it looks
 // like mathematically the average between all the faces that a vertex is a component of
 // is calculated by adding them altogether. That average is what is set for each vertex.
 // The second for loop then normalizes that calculated average.
-void calcAverageNormals( std::vector<GLuint>& indices, std::vector<GLfloat>& vertices, unsigned int vLength,
-                         unsigned int normalOffset ) {
-   for ( size_t i = 0; i < indices.size(); i += 3 ) {
-      unsigned int in0 = indices[ i ] * vLength;
-      unsigned int in1 = indices[ i + 1 ] * vLength;
-      unsigned int in2 = indices[ i + 2 ] * vLength;
-      // clang-format off
+void calcAverageNormals( std::vector<GLuint>& indices, std::vector<GLfloat>& vertices, unsigned int vLength, unsigned int normalOffset )
+{
+    for ( size_t i = 0; i < indices.size(); i += 3 )
+    {
+        unsigned int in0 = indices[ i ] * vLength;
+        unsigned int in1 = indices[ i + 1 ] * vLength;
+        unsigned int in2 = indices[ i + 2 ] * vLength;
+        // clang-format off
         // Calculate normal by cross product to get perpendicular angle to two lines of triangle
         glm::vec3 v1( vertices[in1] - vertices[in0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2] );
         glm::vec3 v2( vertices[in2] - vertices[in0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2] );
@@ -123,76 +127,80 @@ void CreateObjects() {
 		100.0f,  0.0f, 100.0f,    100.0f, 100.0f,	0.0f, -1.0f, 0.0f
 	};
 
-   // clang-format on
+    // clang-format on
 
-   calcAverageNormals( indices, vertices, 8, 5 );
+    calcAverageNormals( indices, vertices, 8, 5 );
 
-   meshList.emplace_back( Mesh() );
-   meshList.emplace_back( Mesh() );
-   meshList.emplace_back( Mesh() );
+    meshList.emplace_back( Mesh() );
+    meshList.emplace_back( Mesh() );
+    meshList.emplace_back( Mesh() );
 
-   meshList[ 0 ].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
-   meshList[ 1 ].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
-   meshList[ 2 ].createMesh( floorVertices.data(), floorIndices.data(), floorVertices.size(), floorIndices.size() );
+    meshList[ 0 ].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
+    meshList[ 1 ].createMesh( vertices.data(), indices.data(), vertices.size(), indices.size() );
+    meshList[ 2 ].createMesh( floorVertices.data(), floorIndices.data(), floorVertices.size(), floorIndices.size() );
 }
 
 // Each Shader object here actually contains both a vertex and fragment shader
-void createShaders() {
-   shaderList.emplace_back();
-   shaderList[ 0 ].getShadersFromFiles( "res/shaders/vertex1.shader", "res/shaders/fragment1.shader" );
+void createShaders()
+{
+    shaderList.emplace_back();
+    shaderList[ 0 ].getShadersFromFiles( "res/shaders/vertex1.shader", "res/shaders/fragment1.shader" );
 }
 
-int main() {
-   bool direction = true;
-   float triOffset = 0.0f;
-   float triMaxOffset = 0.7f;
-   float triIncrement = 0.0005f;
+int main()
+{
+    bool direction = true;
+    float triOffset = 0.0f;
+    float triMaxOffset = 0.7f;
+    float triIncrement = 0.0005f;
 
-   int count = 0;
-   int limit = distr( eng );
-   float increment = 0.3f;
+    int count = 0;
+    int limit = distr( eng );
+    float increment = 0.3f;
 
-   float curAngle = 0.0f;
-   float curAlt = 0.0f;
+    float curAngle = 0.0f;
+    float curAlt = 0.0f;
 
-   OGLWindow mainWindow( 2866, 1768 );
-   mainWindow.initialize();
+    OGLWindow mainWindow( 1920, 1080 );
+    mainWindow.initialize();
 
-   CreateObjects();
-   createShaders();
+    CreateObjects();
+    createShaders();
 
-   // per experimenting I suspect uniforms must always be initialized to 0 before getting
-   // their location
-   GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformEyePosition = 0,
-          uniformSpecularIntensity = 0, uniformShininess = 0;
+    // per experimenting I suspect uniforms must always be initialized to 0 before getting
+    // their location
+    GLuint uniformModel = 0, uniformProjection = 0, uniformView = 0, uniformEyePosition = 0, uniformSpecularIntensity = 0,
+           uniformShininess = 0;
 
-   uniformModel = shaderList[ 0 ].getModelLocation();
-   uniformProjection = shaderList[ 0 ].getProjectionLocation();
-   uniformView = shaderList[ 0 ].getViewLocation();
-   uniformEyePosition = shaderList[ 0 ].getEyePositionLocation();
-   uniformSpecularIntensity = shaderList[ 0 ].getSpecularIntensityLocation();
-   uniformShininess = shaderList[ 0 ].getShininessLocation();
+    uniformModel = shaderList[ 0 ].getModelLocation();
+    uniformProjection = shaderList[ 0 ].getProjectionLocation();
+    uniformView = shaderList[ 0 ].getViewLocation();
+    uniformEyePosition = shaderList[ 0 ].getEyePositionLocation();
+    uniformSpecularIntensity = shaderList[ 0 ].getSpecularIntensityLocation();
+    uniformShininess = shaderList[ 0 ].getShininessLocation();
 
-   Camera camera( glm::vec3( 0.0f, 0.25f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f, 0.0f, 20.0f, 0.06f );
+    Camera camera( glm::vec3( 0.0f, 0.25f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ), -60.0f, 0.0f, 20.75f, 0.06f );
 
-   Texture brickTexture( "res/textures/brick.png" );
-   brickTexture.loadTextureA();
-   Texture dirtTexture( "res/textures/dirt.png" );
-   dirtTexture.loadTextureA();
-   Texture plainTexture( "res/textures/plain.png" );
-   plainTexture.loadTextureA();
+    Texture brickTexture( "res/textures/brick.png" );
+    brickTexture.loadTextureA();
+    Texture dirtTexture( "res/textures/dirt.png" );
+    dirtTexture.loadTextureA();
+    Texture plainTexture( "res/textures/plain.png" );
+    plainTexture.loadTextureA();
 
-   Material shinyMaterial( 1.0f, 32 );
-   Material dullMaterial( 0.3f, 4 );
+    Material shinyMaterial( 1.0f, 32 );
+    Material dullMaterial( 0.3f, 4 );
 
-   Model xwing;
-   xwing.loadModel( "res/models/x-wing.obj" );
-   Model vaderTie;
-   vaderTie.loadModel( "res/models/Star Wars vader tie.obj" );
+    Model xwing;
+    xwing.loadModel( "res/models/x-wing.obj" );
+    printf( "X Wing->" );
+    xwing.printMeshCount();
+    Model vaderTie;
+    vaderTie.loadModel( "res/models/Star Wars vader tie.obj" );
 
-   // clang-format off
+    // clang-format off
     DirectionalLight mainLight( 1.0f, 1.0f, 1.0f,   // colour
-                                0.1f, 0.1f,         // aIntensity, dIntensity
+                                0.8f, 0.1f,         // aIntensity, dIntensity
                                 0.0f, 0.0f, -1.0f );// direction
 
     std::vector<PointLight> pointLights;
@@ -218,130 +226,184 @@ int main() {
                              0.0f, 1.0f,           // aIntensity, dIntensity
                              0.0f, -1.5f, 0.0f,     // position
                              -100.0f, -1.0f, 0.0f, // direction
-                             1.0f, 0.0f, 0.007f,     // constant, linear, exponent 
+                             1.0f, 0.2f, 0.1f,     // constant, linear, exponent 
                              20.0f );              // edge
-   // clang-format on
+    // clang-format on
 
-   // says he only needs to make this once and not recalculate it
-   // therefore not in while loop
+    // says he only needs to make this once and not recalculate it
+    // therefore not in while loop
+    glm::mat4 projection = glm::perspective( 45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f );
+    float lastYaw = -60.0f;
+    float tilt = 0.0f;
+    float target = 0.0f;
 
-   glm::mat4 projection =
-       glm::perspective( 45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f );
-   // Loop until window closed
-   while ( !mainWindow.getShouldClose() ) {
-      if ( direction ) {
-         triOffset += triIncrement;
-      } else {
-         triOffset -= triIncrement;
-      }
+    // Loop until window closed
+    while ( !mainWindow.getShouldClose() )
+    {
+        if ( direction )
+        {
+            triOffset += triIncrement;
+        }
+        else
+        {
+            triOffset -= triIncrement;
+        }
 
-      if ( abs( triOffset ) >= triMaxOffset ) {
-         direction = !direction;
-      }
+        if ( abs( triOffset ) >= triMaxOffset )
+        {
+            direction = !direction;
+        }
 
-      curAngle -= 0.22f;
-      if ( curAngle >= 360 ) {
-         curAngle -= 360;
-      }
+        curAngle -= 0.22f;
+        if ( curAngle >= 360 )
+        {
+            curAngle -= 360;
+        }
 
-      GLfloat now = glfwGetTime();
-      deltaTime = now - lastTime;
-      lastTime = now;
+        GLfloat now = glfwGetTime();
+        deltaTime = now - lastTime;
+        lastTime = now;
 
-      if ( ++count > static_cast<int>( limit ) ) {
-         count = 0;
-         limit = distr( eng );
+        if ( ++count > static_cast<int>( limit ) )
+        {
+            count = 0;
+            limit = distr( eng );
+            increment *= -1;
+        }
+        if ( curAlt > 1.5f )
+        {
+            curAlt -= abs( increment * deltaTime );
+        }
+        else if ( curAlt < -1.5f )
+        {
+            curAlt += abs( increment * deltaTime );
+        }
+        else
+        {
+            curAlt += ( increment * deltaTime );
+        }
 
-         increment *= -1;
-         std::cerr << "limit: " << limit << '\n';
-      }
-      if ( curAlt > 1.5f ) {
-         curAlt -= abs( increment * deltaTime );
-      } else if ( curAlt < -1.5f ) {
-         curAlt += abs( increment * deltaTime );
-      } else {
-         curAlt += ( increment * deltaTime );
-      }
+        glfwPollEvents();
 
-      glfwPollEvents();
+        camera.keyControl( mainWindow.getKeys(), deltaTime );
+        camera.mouseControl( mainWindow.getXChange(), mainWindow.getYChange() );
+        camera.scrollControll( mainWindow.getYOffset(), deltaTime );
 
-      camera.keyControl( mainWindow.getKeys(), deltaTime );
-      camera.mouseControl( mainWindow.getXChange(), mainWindow.getYChange() );
-      camera.scrollControll( mainWindow.getYOffset(), deltaTime );
+        // Clear window
+        glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-      // Clear window
-      glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        glm::vec3 lowerLight = camera.getCameraPosition();
+        lowerLight.y += 1.3f;
 
-      glm::vec3 lowerLight = camera.getCameraPosition();
-      lowerLight.y -= 0.3f;
-      spotLights[ 0 ].setFlash( lowerLight, camera.getCameraDirection() );
+        spotLights[ 0 ].setFlash( lowerLight, camera.getCameraDirection() );
 
-      shaderList[ 0 ].useShader();
-      shaderList[ 0 ].setDirectionalLight( mainLight );
-      shaderList[ 0 ].setPointLights( pointLights );
+        shaderList[ 0 ].useShader();
+        shaderList[ 0 ].setDirectionalLight( mainLight );
+        shaderList[ 0 ].setPointLights( pointLights );
 
-      shaderList[ 0 ].setSpotLights( spotLights );
+        shaderList[ 0 ].setSpotLights( spotLights );
 
-      glUniformMatrix4fv( uniformProjection, 1, GL_FALSE, glm::value_ptr( projection ) );
-      glUniformMatrix4fv( uniformView, 1, GL_FALSE, glm::value_ptr( camera.calculateViewMatrix() ) );
-      glUniform3f( uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y,
-                   camera.getCameraPosition().z );
-      auto position = camera.getCameraPosition();
-      // auto change = position - lastPosition;
-      // lastPosition = position;
-      // std::cerr << "Change: " << change.x << ", " << change.y << ", " << change.z << '\n';
+        glUniformMatrix4fv( uniformProjection, 1, GL_FALSE, glm::value_ptr( projection ) );
+        glUniformMatrix4fv( uniformView, 1, GL_FALSE, glm::value_ptr( camera.calculateViewMatrix() ) );
+        glUniform3f( uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z );
+        glm::vec3 position = camera.getCameraPosition();
 
-      auto model = glm::mat4( 1.0f );
-      model = glm::translate( model, glm::vec3( 0.0f, -2.0f, 0.0f ) );
-      // model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
-      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-      dirtTexture.useTexture();
-      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-      meshList[ 2 ].renderMesh();
+        glm::mat4 model = glm::mat4( 1.0f );
 
-      model = glm::mat4( 1.0f );
+        model = glm::mat4( 1.0f );
+        // model = glm::translate( model, change );
+        //
 
-      model = glm::rotate( model, toRadians( curAngle ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-      model = glm::translate( model, glm::vec3( 90.0f, curAlt + 0.75f, 0.0f ) );
-      // model = glm::rotate( model, toRadians( -10.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-      model = glm::rotate( model, toRadians( 37.0f - ( curAlt * 20.0f ) ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        model = glm::translate( model, glm::vec3( position ) );
+        model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+        model = glm::rotate( model, -toRadians( camera.yaw ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        model = glm::rotate( model, toRadians( camera.pitch ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        model = glm::translate( model, glm::vec3( 390.0f, -90.0f, 10.0f ) );
 
-      model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
-      model = glm::translate( model, glm::vec3( -1400.0172f, -108.2528f, 1722.1118f ) );
+        float yawChangeValue = camera.yaw - lastYaw;
+        float sign = std::signbit( yawChangeValue ) ? -1.0f : 1.0f;
+        float rotation = abs( yawChangeValue );
+        float adjustAtten = std::signbit( yawChangeValue ) == std::signbit( target ) ? rotation / 90.0f : 2.0 * ( rotation / 90.0f );
+        if ( rotation > 0.10f )
+        {
+            auto adjustment = adjustAtten * ( 90.0f - ( ( 1.5f + adjustAtten ) * abs( target ) ) );
+            if ( 90.0f > ( abs( target ) + adjustment ) )
+            {
+                target += sign * adjustment;
+            }
+        }
+        else if ( rotation < 0.05f )
+        {
+            if ( tilt <= 0.5f && tilt >= -0.5f )
+            {
+                target = 0.0f;
+            }
+            else if ( target > 0.0f )
+            {
+                target -= 0.75f;
+            }
+            else if ( target < 0.0f )
+            {
+                target += 0.75f;
+            }
+        }
+        tilt = ( target * 0.1f ) + ( tilt * 0.9f );
 
-      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-      xwing.renderModel();
+        model = glm::rotate( model, toRadians( tilt ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
 
-      model = glm::mat4( 1.0f );
-      model = glm::rotate( model, toRadians( curAngle + 5.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-      model = glm::translate( model, glm::vec3( 90.0f, -curAlt + 1.0f, 0.0f ) );
-      model = glm::rotate( model, toRadians( 20.0f + ( curAlt * 20.0f ) ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
-      model = glm::rotate( model, toRadians( -25.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
-      model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
-      model = glm::translate( model, glm::vec3( 109.477, -720.436, 320.566 ) );
+        model = glm::rotate( model, toRadians( 90.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        model = glm::translate( model, glm::vec3( -1401.5920f, -108.5028f, 1722.1118f ) );
 
-      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-      vaderTie.renderModel();
+        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+        shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+        xwing.renderModel();
+        lastYaw = camera.yaw;
 
-      model = glm::mat4( 1.0f );
-      // model = glm::translate( model, change );
-      model = glm::rotate( model, toRadians( 152.25f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-      model = glm::translate( model, glm::vec3( -0.1f, 0.0f, 1.5f ) );
-      model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
-      model = glm::translate(
-          model, glm::vec3( -position.x - 1400.0172f, -position.y - 108.2528f, -position.z + 1722.1118f ) );
+        model = glm::mat4( 1.0f );
+        model = glm::translate( model, glm::vec3( 0.0f, -2.0f, 0.0f ) );
+        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+        dirtTexture.useTexture();
+        shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+        meshList[ 2 ].renderMesh();
 
-      glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
-      shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
-      xwing.renderModel();
+        model = glm::mat4( 1.0f );
 
-      glUseProgram( 0 );
+        model = glm::rotate( model, toRadians( curAngle ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        model = glm::translate( model, glm::vec3( 90.0f, curAlt + 0.75f, 0.0f ) );
+        model = glm::rotate( model, toRadians( 37.0f - ( curAlt * 20.0f ) ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+        model = glm::translate( model, glm::vec3( -1400.0172f, -108.2528f, 1722.1118f ) );
 
-      mainWindow.swapBuffers();
-   }
+        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+        shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+        xwing.renderModel();
 
-   return 0;
+        model = glm::mat4( 1.0f );
+        model = glm::rotate( model, toRadians( curAngle + 5.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        model = glm::translate( model, glm::vec3( 90.0f, -curAlt + 1.0f, 0.0f ) );
+        model = glm::rotate( model, toRadians( 20.0f + ( curAlt * 20.0f ) ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        model = glm::rotate( model, toRadians( -25.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+        model = glm::translate( model, glm::vec3( 109.477, -720.436, 320.566 ) );
+
+        glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+        shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+        vaderTie.renderModel();
+
+        // model = glm::mat4( 1.0f );
+        // model = glm::translate( model, glm::vec3( 0.8f, .0f, -1.5f ) );
+        // model = glm::scale( model, glm::vec3( 0.006f, 0.006f, 0.006f ) );
+        // model = glm::rotate( model, toRadians( -30.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        // model = glm::translate( model, glm::vec3( -position ) );
+        // glUniformMatrix4fv( uniformModel, 1, GL_FALSE, glm::value_ptr( model ) );
+        // shinyMaterial.useMaterial( uniformSpecularIntensity, uniformShininess );
+        // lordVader.renderModel();
+
+        glUseProgram( 0 );
+
+        mainWindow.swapBuffers();
+    }
+
+    return 0;
 }

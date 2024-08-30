@@ -30,6 +30,7 @@ class Model {
    void loadModel( const std::string& filename );
    void renderModel();
    void clearModel();
+   void printMeshCount() const;
 
    ~Model();
 };

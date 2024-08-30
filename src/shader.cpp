@@ -30,10 +30,10 @@ namespace {
    std::string getShaderFromFile( const char* filepath ) {
       FILE* fp;
       size_t buffer_size = getFileSize( &fp, filepath );
-      char shaderCode[ buffer_size ];
-      getShaderCode( shaderCode, buffer_size, &fp );
-      std::string str( shaderCode );
-      return str;
+      std::string shaderCode;
+      shaderCode.resize( buffer_size );
+      getShaderCode( shaderCode.data(), buffer_size, &fp );
+      return shaderCode;
    }
 }  // namespace
 
@@ -45,8 +45,8 @@ Shader::Shader()
       uniformSpecularIntensity{ -1 },
       uniformShininess{ -1 },
       uniformPointLightCount{ 0 } {
-   uniformPointLight.reserve( MAX_POINT_LIGHTS );
-   uniformSpotLight.reserve( MAX_SPOT_LIGHTS );
+   uniformPointLight.resize( MAX_POINT_LIGHTS );
+   uniformSpotLight.resize( MAX_SPOT_LIGHTS );
 }
 
 void Shader::createFromString( const char* vertexCode, const char* fragmentCode ) {

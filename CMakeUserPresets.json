@@ -1,0 +1,54 @@
+{
+   "version": 3,
+   "configurePresets": [
+    {
+      "name": "linux-base",
+      "hidden": true,
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+         "CMAKE_CXX_COMPILER": "g++",
+         "CMAKE_TOOLCHAIN_FILE": "/home/sethvan/vcpkg/scripts/buildsystems/vcpkg.cmake",
+         "ASSIMP_IMPORTED_LOCATION": "/home/sethvan/vcpkg/packages/assimp_x64-linux/lib/libassimp.a"
+      },
+      "environment": {
+         "CMAKE_POLICY_DEFAULT_CMP0012": "NEW"
+      }
+   },
+  {
+    "name": "debug",
+    "description": "Configure for Debug on Linux for shared library",
+    "inherits": "linux-base",
+    "cacheVariables": {
+      "CMAKE_BUILD_TYPE": "Debug",        
+      "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF",
+      "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -ggdb3 -Wl,-z,defs -ldl -fsanitize=address -D_GLIBCXX_ASSERTIONS=1"
+    }
+  },
+  {
+   "name": "release",
+   "description": "Configure for Release on Linux for shared library",
+   "inherits": "linux-base",
+   "cacheVariables": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_FLAGS_INIT": "-Wall -Wextra -Wpedantic -O3"         
+    }
+ }
+   ],
+   "buildPresets": [
+{  
+   "name": "debug",
+   "configurePreset": "debug"
+},
+{
+   "name": "release",
+   "configurePreset": "release"
+}
+   ]
+ }
+ 
